@@ -64,10 +64,6 @@ Initialize() {
 
     RBLX_PID := GetRobloxPID()
 
-    if (!RBLX_PID && ENV = "prod") {
-        throw Error("Roblox instance not found")
-    }
-
     if (RBLX_PID) {
         RBLX_BASE := GetProcessBase(RBLX_PID)
         if (!RBLX_BASE) {

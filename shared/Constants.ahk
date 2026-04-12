@@ -1,16 +1,13 @@
 #Requires AutoHotkey v2.0
 
 MAJOR_VER       := "v0"
-FULL_VER        := "v0.0.7"
+FULL_VER        := "v0.0.6"
 ROBLOX_VER      := "version-26c90be22e0d4758"
 GITHUB_OWNER        := "termx3"
-GITHUB_REPO         := "Canary-OpenMacro-XTernal"  ; canary repo
+; GITHUB_REPO         := "OpenMacro-XTernal"
+GITHUB_REPO         := "Canary-OpenMacro-XTernal"
 VERSION_URL         := "https://raw.githubusercontent.com/" GITHUB_OWNER "/" GITHUB_REPO "/main/version.txt"
 TAG_ZIP_BASE_URL    := "https://github.com/" GITHUB_OWNER "/" GITHUB_REPO "/archive/refs/tags/"
-; GITHUB_OWNER    := "termx3"
-; GITHUB_REPO     := "OpenMacro-XTernal"
-; VERSION_URL     := "https://raw.githubusercontent.com/" GITHUB_OWNER "/" GITHUB_REPO "/main/version.txt"
-; TAG_ZIP_BASE_URL := "https://github.com/" GITHUB_OWNER "/" GITHUB_REPO "/archive/refs/tags/"
 UPDATE_RELAUNCH_ARG := "--post-update"
 ROBLOX_INSTANCE := "RobloxPlayerBeta.exe"
 H_PROCESS       := 0
