@@ -267,22 +267,24 @@ IsUrlReachable(url) {
 }
 
 IsValidVersionString(version) {
-    return RegExMatch(version, "^v\d+\.\d+\.\d+$")
+    return RegExMatch(version, "^v\d+\.\d+\.\d+(-canary\.\d+)?$")
 }
 
 ParseVersion(version) {
     if !IsValidVersionString(version)
         throw Error("Invalid version string: " version)
 
-    parts := StrSplit(SubStr(version, 2), ".")
-    return [parts[1] + 0, parts[2] + 0, parts[3] + 0]
+    RegExMatch(version, "^v(\d+)\.(\d+)\.(\d+)(?:-canary\.(\d+))?$", &m)
+    ; pre: -1 = stable release (no suffix), >= 0 = canary build number
+    ; stable ranks higher than any canary of the same major.minor.patch
+    return [m[1] + 0, m[2] + 0, m[3] + 0, (m[4] = "") ? -1 : m[4] + 0]
 }
 
 CompareVersions(leftVersion, rightVersion) {
     leftParts := ParseVersion(leftVersion)
     rightParts := ParseVersion(rightVersion)
 
-    Loop 3 {
+    Loop 4 {
         if (leftParts[A_Index] > rightParts[A_Index])
             return 1
 
@@ -379,7 +381,6 @@ GetPackageVersion(rootPath) {
 
 CreateUpdateHelper(version, tempRoot, stageRoot) {
     helperPath := A_Temp "\OpenMacro-XTernal-UpdateHelper-" A_Now "_" DllCall("GetTickCount64", "Int64") ".cmd"
-    wrapperPath := helperPath ".vbs"
     currentPid := DllCall("GetCurrentProcessId")
     mainScriptPath := A_ScriptDir "\Main.ahk"
     q := Chr(34)
@@ -396,7 +397,6 @@ CreateUpdateHelper(version, tempRoot, stageRoot) {
     lines.Push("set " q "MAIN_SCRIPT=" EscapeBatchValue(mainScriptPath) q)
     lines.Push("set " q "UPDATED_VERSION=" EscapeBatchValue(version) q)
     lines.Push("set " q "ACK_PATH=" EscapeBatchValue(POST_UPDATE_ACK_PATH) q)
-    lines.Push("set " q "WRAPPER_PATH=" EscapeBatchValue(wrapperPath) q)
     lines.Push("set " q "CLEANUP_TEMP=1" q)
 
     lines.Push("for /L %%I in (1,1,60) do (")
@@ -463,7 +463,6 @@ CreateUpdateHelper(version, tempRoot, stageRoot) {
 
     lines.Push(":cleanup")
     lines.Push("if " q "%CLEANUP_TEMP%" q "==" q "1" q " (")
-    lines.Push("    if exist " q "%WRAPPER_PATH%" q " del /f /q " q "%WRAPPER_PATH%" q " >nul 2>nul")
     lines.Push("    if exist " q "%TEMP_ROOT%" q " rmdir /s /q " q "%TEMP_ROOT%" q)
     lines.Push("    start " q q " powershell -NoProfile -NonInteractive -WindowStyle Hidden -Command " q "Start-Sleep -Seconds 2; Remove-Item -LiteralPath '%~f0' -Force" q " >nul 2>nul")
     lines.Push(")")
@@ -485,16 +484,7 @@ EscapeBatchValue(value) {
 }
 
 LaunchUpdateHelper(helperPath) {
-    wrapperPath := helperPath ".vbs"
-    launchCommand := StrReplace(A_ComSpec ' /c ""' helperPath '""', '"', '""')
-    wrapperContents := 'Set shell = CreateObject("WScript.Shell")' "`r`n"
-        . 'shell.Run "' launchCommand '", 0, False' "`r`n"
-
-    if FileExist(wrapperPath)
-        FileDelete(wrapperPath)
-
-    FileAppend(wrapperContents, wrapperPath, "UTF-8-RAW")
-    Run('"' A_WinDir '\System32\wscript.exe" "' wrapperPath '"', , "Hide", &helperPid)
+    Run(A_ComSpec ' /c ""' helperPath '""', , "Hide", &helperPid)
     return helperPid != 0
 }
 
@@ -510,11 +500,5 @@ CleanupUpdateArtifacts(tempRoot, helperPath := "") {
 
     if (helperPath != "" && FileExist(helperPath)) {
         try FileDelete(helperPath)
-    }
-
-    if (helperPath != "") {
-        wrapperPath := helperPath ".vbs"
-        if FileExist(wrapperPath)
-            try FileDelete(wrapperPath)
     }
 }

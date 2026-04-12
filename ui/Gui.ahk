@@ -315,6 +315,10 @@ GetGui() {
     })
     ApplyAppearanceBtn.OnEvent("Click", (*) => ApplyAppearanceChanges(appearanceFields, ThemeDDL))
 
+    OpenSettingsBtn := mg.AddText("x330 y27 w80 h16 c" Accent, "Open folder")
+    OpenSettingsBtn.SetFont("underline")
+    OpenSettingsBtn.OnEvent("Click", (*) => Run("explorer.exe `"" APPDATA_DIR "`""))
+
     mg.AddText("x10 y565 w240 h20 c" SubColor, "Press Apply to save and reload.")
 
 
@@ -346,7 +350,7 @@ GetGui() {
 
     mg.Show("w400 h600 y100 x1100")
     UpdateMacroStatus("OFF", "---", "---")
-    MainTab.Choose(1)
+    MainTab.Choose(3)
     lastAllowedTab := MainTab.Value
 
     mg.OnEvent("Close", (*) => ExitApp())
