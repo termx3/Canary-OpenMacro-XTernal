@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0
 
 MAJOR_VER       := "v0"
-FULL_VER        := "v0.0.6"
+FULL_VER        := "v0.0.7"
 ROBLOX_VER      := "version-26c90be22e0d4758"
 GITHUB_OWNER        := "termx3"
 ; GITHUB_REPO         := "OpenMacro-XTernal"
@@ -19,8 +19,10 @@ OFFSETS_PATH    := A_ScriptDir "\settings\offsets.json"
 APPDATA_DIR   := EnvGet("APPDATA") "\OpenMacro\XTernal"
 CONFIGS_DIR   := APPDATA_DIR "\configs"
 SETTINGS_PATH := APPDATA_DIR "\settings.json"
-POST_UPDATE_FLAG_PATH := APPDATA_DIR "\post-update.txt"
-POST_UPDATE_ACK_PATH  := APPDATA_DIR "\post-update-ack.txt"
+POST_UPDATE_FLAG_PATH   := APPDATA_DIR "\post-update.txt"
+POST_UPDATE_ACK_PATH    := APPDATA_DIR "\post-update-ack.txt"
+UPDATE_CHECK_CACHE_PATH := APPDATA_DIR "\update-check-cache.json"
+UPDATE_CHECK_TTL        := 300
 
 ROD           := ""
 SETTINGS        := LoadSettings()

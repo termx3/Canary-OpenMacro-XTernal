@@ -1,11 +1,57 @@
 #Requires AutoHotkey v2.0
 
+_ReadUpdateCheckCache() {
+    global UPDATE_CHECK_CACHE_PATH, UPDATE_CHECK_TTL
+
+    if !FileExist(UPDATE_CHECK_CACHE_PATH)
+        return ""
+
+    try {
+        cache := JSON.parse(FileRead(UPDATE_CHECK_CACHE_PATH))
+
+        if (!cache.Has("checked_at") || !cache.Has("fetched_version"))
+            return ""
+
+        age := DateDiff(A_Now, cache["checked_at"], "Seconds")
+        if (age < 0 || age > UPDATE_CHECK_TTL)
+            return ""
+
+        v := Trim(cache["fetched_version"], " `t`r`n")
+        if !IsValidVersionString(v)
+            return ""
+
+        return v
+    } catch {
+        return ""
+    }
+}
+
+_WriteUpdateCheckCache(fetchedVersion) {
+    global APPDATA_DIR, UPDATE_CHECK_CACHE_PATH
+
+    if !DirExist(APPDATA_DIR)
+        DirCreate(APPDATA_DIR)
+
+    try {
+        cache := Map("checked_at", A_Now, "fetched_version", fetchedVersion)
+        file  := FileOpen(UPDATE_CHECK_CACHE_PATH, "w")
+        file.Write(JSON.stringify(cache, 4))
+        file.Close()
+    } catch {
+    }
+}
+
 CheckForAvailableUpdate() {
     if (GetUpdaterBlockReason() != "")
         return ""
 
     try {
-        remoteVersion := Trim(FetchTextUrl(VERSION_URL), " `t`r`n")
+        remoteVersion := _ReadUpdateCheckCache()
+        if (remoteVersion = "") {
+            remoteVersion := Trim(FetchTextUrl(VERSION_URL), " `t`r`n")
+            if IsValidVersionString(remoteVersion)
+                _WriteUpdateCheckCache(remoteVersion)
+        }
 
         if !IsValidVersionString(remoteVersion)
             return ""
@@ -125,6 +171,26 @@ ConsumePostUpdateVersion() {
     }
 
     try FileDelete(POST_UPDATE_FLAG_PATH)
+
+    if !IsValidVersionString(version)
+        return ""
+
+    return version
+}
+
+ConsumePostUpdateAck() {
+    EnsurePostUpdateFlagDir()
+
+    if !FileExist(POST_UPDATE_ACK_PATH)
+        return ""
+
+    try {
+        version := Trim(FileRead(POST_UPDATE_ACK_PATH), " `t`r`n")
+    } catch {
+        version := ""
+    }
+
+    try FileDelete(POST_UPDATE_ACK_PATH)
 
     if !IsValidVersionString(version)
         return ""
