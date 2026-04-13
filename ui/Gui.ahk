@@ -354,8 +354,14 @@ GetGui() {
 
     mg.Show("w400 h600 y100 x1100")
     UpdateMacroStatus("OFF", "---", "---")
-    MainTab.Choose(ConsumePostUpdateAck() != "" ? 4 : 1)
+    MainTab.Choose(1)
     lastAllowedTab := MainTab.Value
+
+    if (SETTINGS.Has("just_updated") && SETTINGS["just_updated"]) {
+        SETTINGS["just_updated"] := false
+        SaveSettingsFile()
+        MainTab.Choose(4)
+    }
 
     mg.OnEvent("Close", (*) => ExitApp())
 

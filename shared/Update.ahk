@@ -106,6 +106,10 @@ BeginUpdateInstall(version, showErrors := false) {
         if !LaunchUpdateHelper(helperPath)
             throw Error("Failed to launch the external updater helper.")
 
+        global SETTINGS
+        SETTINGS["just_updated"] := true
+        SaveSettingsFile()
+
         return true
     } catch as err {
         CleanupUpdateArtifacts(tempRoot, helperPath)
@@ -171,26 +175,6 @@ ConsumePostUpdateVersion() {
     }
 
     try FileDelete(POST_UPDATE_FLAG_PATH)
-
-    if !IsValidVersionString(version)
-        return ""
-
-    return version
-}
-
-ConsumePostUpdateAck() {
-    EnsurePostUpdateFlagDir()
-
-    if !FileExist(POST_UPDATE_ACK_PATH)
-        return ""
-
-    try {
-        version := Trim(FileRead(POST_UPDATE_ACK_PATH), " `t`r`n")
-    } catch {
-        version := ""
-    }
-
-    try FileDelete(POST_UPDATE_ACK_PATH)
 
     if !IsValidVersionString(version)
         return ""
