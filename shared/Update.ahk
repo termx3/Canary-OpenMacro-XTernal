@@ -106,10 +106,6 @@ BeginUpdateInstall(version, showErrors := false) {
         if !LaunchUpdateHelper(helperPath)
             throw Error("Failed to launch the external updater helper.")
 
-        global SETTINGS
-        SETTINGS["just_updated"] := true
-        SaveSettingsFile()
-
         return true
     } catch as err {
         CleanupUpdateArtifacts(tempRoot, helperPath)
@@ -124,7 +120,7 @@ BeginUpdateInstall(version, showErrors := false) {
 }
 
 RecordSuccessfulUpdateLaunch() {
-    global UPDATE
+    global UPDATE, SETTINGS
 
     if (A_Args.Length < 2)
         return
@@ -149,6 +145,9 @@ RecordSuccessfulUpdateLaunch() {
         FileAppend(updatedVersion, POST_UPDATE_ACK_PATH, "UTF-8-RAW")
     } catch {
     }
+
+    SETTINGS["just_updated"] := true
+    SaveSettingsFile()
 
     if !UPDATE["show_confirmation"]
         return
